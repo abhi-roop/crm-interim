@@ -1,16 +1,13 @@
 package com.cts.crm.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
-@Table(name = "sales_automation")  // Explicitly specifying table name
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,9 +15,15 @@ public class SalesAutomationModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long opportunityId;
 
-    private String productName;
-    private Double salesAmount;
-    private String customerName;
+    private String opportunityName;
+
+    private Double estimatedValue;
+
+    private LocalDate closingDate;
+
+    private String salesStage;
+
+    private String assignedSalesRep;
 }

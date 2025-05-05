@@ -1,6 +1,7 @@
 package com.cts.crm.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cts.crm.dto.CustomerDataRequest;
+import com.cts.crm.dto.CustomerDataResponse;
 import com.cts.crm.model.CustomerData;
 import com.cts.crm.service.CustomerDataService;
 
@@ -22,38 +25,67 @@ import jakarta.validation.Valid;
 @RequestMapping("/customers")
 public class CustomerDataController {
 
-	@Autowired
-	private CustomerDataService customerDataService;
+    @Autowired
+    private CustomerDataService customerDataService;
 
-	// Create a new customer
-	@PostMapping
-	public ResponseEntity<CustomerData> createCustomer(@Valid @RequestBody CustomerData customer) {
-		return ResponseEntity.ok(customerDataService.saveCustomer(customer));
-	}
+    @PostMapping
+    public ResponseEntity<CustomerDataResponse> createCustomer(@Valid @RequestBody CustomerDataRequest customerRequest) {
+        CustomerData createdCustomer = customerDataService.saveCustomer(convertToEntity(customerRequest));
+        return ResponseEntity.ok(convertToResponse(createdCustomer));
+    }
 
-	// Get customer by ID
-	@GetMapping("/{id}")
-	public ResponseEntity<CustomerData> getCustomer(@PathVariable Long id) {
-		return ResponseEntity.ok(customerDataService.getCustomerById(id));
-	}
+    @GetMapping("/{id}")
+    public ResponseEntity<CustomerDataResponse> getCustomer(@PathVariable Long id) {
+        CustomerData customer = customerDataService.getCustomerById(id);
+        if (customer == null) {
+            // You should throw a ResourceNotFoundException here (assuming you have it)
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(convertToResponse(customer));
+    }
 
-	// Get all customers
-	@GetMapping
-	public ResponseEntity<List<CustomerData>> getAllCustomers() {
-		return ResponseEntity.ok(customerDataService.getAllCustomers());
-	}
+    @GetMapping
+    public ResponseEntity<List<CustomerDataResponse>> getAllCustomers() {
+        List<CustomerData> customers = customerDataService.getAllCustomers();
+        return ResponseEntity.ok(customers.stream()
+                                       .map(this::convertToResponse)
+                                       .collect(Collectors.toList()));
+    }
 
-	// Update a customer
-	@PutMapping("/{id}")
-	public ResponseEntity<CustomerData> updateCustomer(@PathVariable Long id,
-			@Valid @RequestBody CustomerData customer) {
-		return ResponseEntity.ok(customerDataService.updateCustomer(id, customer));
-	}
+    @PutMapping("/{id}")
+    public ResponseEntity<CustomerDataResponse> updateCustomer(@PathVariable Long id, @Valid @RequestBody CustomerDataRequest customerRequest) {
+        CustomerData updatedCustomer = customerDataService.updateCustomer(id, convertToEntity(customerRequest));
+        if (updatedCustomer == null) {
+            // You should throw a ResourceNotFoundException here
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(convertToResponse(updatedCustomer));
+    }
 
-	// Delete a customer
-	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
-		customerDataService.deleteCustomer(id);
-		return ResponseEntity.noContent().build();
-	}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
+        customerDataService.deleteCustomer(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    private CustomerData convertToEntity(CustomerDataRequest request) {
+        CustomerData customer = new CustomerData();
+        customer.setFirstName(request.getFirstName());
+        customer.setLastName(request.getLastName());
+        customer.setEmail(request.getEmail());
+        customer.setPhone(request.getPhone());
+        customer.setAddress(request.getAddress());
+        return customer;
+    }
+
+    private CustomerDataResponse convertToResponse(CustomerData customer) {
+        CustomerDataResponse response = new CustomerDataResponse();
+        response.setCustomerId(customer.getCustomerId());
+        response.setFirstName(customer.getFirstName());
+        response.setLastName(customer.getLastName());
+        response.setEmail(customer.getEmail());
+        response.setPhone(customer.getPhone());
+        response.setAddress(customer.getAddress());
+        return response;
+    }
 }

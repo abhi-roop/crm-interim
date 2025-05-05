@@ -1,13 +1,12 @@
 package com.cts.crm.service;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.cts.crm.exception.ResourceNotFoundException;
+import com.cts.crm.model.SalesAutomationModel;
+import com.cts.crm.repository.SalesAutomationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.cts.crm.model.SalesAutomationModel;
-import com.cts.crm.repository.SalesAutomationRepository;
+import java.util.List;
 
 @Service
 public class SalesAutomationServiceImpl implements SalesAutomationService {
@@ -15,33 +14,37 @@ public class SalesAutomationServiceImpl implements SalesAutomationService {
     @Autowired
     private SalesAutomationRepository repository;
 
-    // Save Sale Record (POST)
     @Override
-    public SalesAutomationModel recordSale(SalesAutomationModel sale) {
-        return repository.save(sale);
+    public SalesAutomationModel createOpportunity(SalesAutomationModel opportunity) {
+        return repository.save(opportunity);
     }
 
-    // Get All Sales
     @Override
-    public List<SalesAutomationModel> getAllSales() {
+    public SalesAutomationModel getOpportunityById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Sales Opportunity ID " + id + " not found"));
+    }
+
+    @Override
+    public List<SalesAutomationModel> getAllOpportunities() {
         return repository.findAll();
     }
 
-    // Get Sale By ID
     @Override
-    public Optional<SalesAutomationModel> getSaleById(Long id) {
-        return repository.findById(id);
+    public SalesAutomationModel updateOpportunity(Long id, SalesAutomationModel opportunity) {
+        return repository.findById(id)
+                .map(existingOpportunity -> {
+                    opportunity.setOpportunityId(id);
+                    return repository.save(opportunity);
+                })
+                .orElseThrow(() -> new ResourceNotFoundException("Sales Opportunity ID " + id + " not found"));
     }
 
-    // Get Sales By Product Name
     @Override
-    public List<SalesAutomationModel> getSalesByProductName(String productName) {
-        return repository.findByProductName(productName);
-    }
-
-    // Get Sales By Amount
-    @Override
-    public List<SalesAutomationModel> getSalesByAmount(Double salesAmount) {
-        return repository.findBySalesAmount(salesAmount);
+    public void deleteOpportunity(Long id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Sales Opportunity ID " + id + " not found");
+        }
+        repository.deleteById(id);
     }
 }

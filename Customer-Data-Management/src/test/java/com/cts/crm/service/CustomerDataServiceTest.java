@@ -28,12 +28,24 @@ class CustomerDataServiceTest {
 
     @Test
     void testSaveCustomer() {
-        CustomerData customer = new CustomerData(1L, "John Doe", "john@example.com", "Purchase History", "VIP");
+        // Create a CustomerData object with the correct fields
+        CustomerData customer = new CustomerData();
+        customer.setCustomerId(1L);
+        customer.setFirstName("John");
+        customer.setLastName("Doe");
+        customer.setEmail("john@example.com");
+        customer.setPhone("1234567890");
+        customer.setAddress("456 Oak St");
+
+        // Mock the repository's save method to return the customer object
         when(customerDataRepository.save(customer)).thenReturn(customer);
 
+        // Call the service method
         CustomerData savedCustomer = customerDataService.saveCustomer(customer);
 
+        // Assertions
         assertNotNull(savedCustomer);
-        assertEquals("John Doe", savedCustomer.getName());
+        assertEquals("John", savedCustomer.getFirstName());
+        assertEquals("john@example.com", savedCustomer.getEmail());
     }
 }

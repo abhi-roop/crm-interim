@@ -6,4 +6,5 @@ import java.util.List;
 public interface AnalyticsReportingService {
     List<AnalyticsReportingModel> getAllReports();
     AnalyticsReportingModel generateReport(AnalyticsReportingModel report);
+    AnalyticsReportingModel getReportById(Long id);
 }
